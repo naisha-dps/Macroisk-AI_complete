@@ -2,13 +2,14 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
+from pathlib import Path
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.metrics import mean_squared_error, r2_score
-from statsmodels.tsa.stattools import adfuller 
+from statsmodels.tsa.stattools import adfuller
 
 def train_arimax_model():
     """Trains ARIMAX model using a 90/10 time-series split on the master macro dataset."""
-    database_path = "/Users/dominating-spirit/newbackend/master_macro_dataset.csv"
+    database_path = "C:/Users/prana/Downloads/master_macro_dataset.csv"
     if not os.path.exists(database_path):
         raise FileNotFoundError(f"Master dataset not found at {database_path}.")
 
@@ -23,37 +24,48 @@ def train_arimax_model():
     df = df.set_index("Date")
     df = df.asfreq('MS') # Ensure monthly frequency
 
-    target = df['CPI_Inflation_Rate'].dropna()
-    exog = df[['WPI', 'Repo_Rate', 'oil_price', 'exchange_rate']].loc[target.index]
+    # Select variables
+    model_df = df[["CPI_Inflation_Rate", "WPI", "Repo_Rate", "oil_price", "exchange_rate"]].dropna()
 
-    # Align data
-    model_df = pd.concat([target, exog], axis=1).dropna()
-    y = model_df['CPI_Inflation_Rate']
-    X = model_df[['WPI', 'Repo_Rate', 'oil_price', 'exchange_rate']]
+    # Keep original CPI inflation series
+    original_cpi = model_df["CPI_Inflation_Rate"].copy()
+
+    # First difference all variables
+    model_df = model_df.diff().dropna()
+    
+
+    # Target and exogenous variables
+    y = model_df["CPI_Inflation_Rate"]
+    X = model_df[["WPI", "Repo_Rate", "oil_price", "exchange_rate"]]
 
     # 80/20 chronological split
     train_size = int(len(model_df) * 0.80)
     y_train, y_test = y.iloc[:train_size], y.iloc[train_size:] # Align lengths
     X_train, X_test = X.iloc[:train_size], X.iloc[train_size:]
 
+
     # Fit ARIMAX on training slice
-    model = SARIMAX(y_train, exog=X_train, order=(2,1,1), seasonal_order=(1,0,1,12))
+    model = SARIMAX(y_train, exog=X_train, order=(2,0,1), seasonal_order=(1,0,1,12))
     results = model.fit(maxiter=500, disp=False)
 
     print(model.order)
     print(results.summary())
 
     predictions = []
+    predictions_level = []
 
     history_y = y_train.copy()
     history_X = X_train.copy()
+
+    first_test_pos = original_cpi.index.get_loc(y_test.index[0])
+    last_actual_level = original_cpi.iloc[first_test_pos - 1]
 
     for i in range(len(y_test)):
 
         model = SARIMAX(
             history_y,
             exog=history_X,
-            order=(2,1,1),
+            order=(2,0,1), 
             seasonal_order=(1,0,1,12)
         )
 
@@ -67,13 +79,24 @@ def train_arimax_model():
             exog=X_test.iloc[[i]]
         )
 
-        predictions.append(pred.iloc[0])
+        pred_diff = pred.iloc[0]
+        predictions.append(pred_diff)
+
+        # Reconstruct inflation rate
+        pred_level = last_actual_level + pred_diff
+        predictions_level.append(pred_level)
+
 
         # Add the ACTUAL observation before forecasting the next month
         history_y = pd.concat([history_y, y_test.iloc[[i]]])
         history_X = pd.concat([history_X, X_test.iloc[[i]]])
 
+        # Update using the actual inflation rate
+        last_actual_level = original_cpi.loc[y_test.index[i]]
+
     y_pred = pd.Series(predictions, index=y_test.index)
+    y_pred_level = pd.Series(predictions_level, index=y_test.index)
+    y_test_level = original_cpi.loc[y_test.index]
 
     from sklearn.metrics import (
         mean_squared_error,
@@ -81,10 +104,10 @@ def train_arimax_model():
         r2_score
     )
 
-    mse = mean_squared_error(y_test, y_pred)
+    mse = mean_squared_error(y_test_level, y_pred_level)
     rmse = np.sqrt(mse)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test_level, y_pred_level)
+    r2 = r2_score(y_test_level, y_pred_level)
 
     print("\n===== Forecast Performance =====")
     print(f"MSE : {mse:.4f}")

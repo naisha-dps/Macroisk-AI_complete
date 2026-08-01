@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
+from pathlib import Path
 from statsmodels.tsa.api import VAR
 
 def train_var_model():
     """Trains Vector Autoregression (VAR) model for Agent 1 multivariate macro analysis."""
-    database_path = "/Users/dominating-spirit/newbackend/master_macro_dataset.csv"
+    database_path = Path(__file__).resolve().parent.parent / "master_macro_dataset.csv"
     if not os.path.exists(database_path):
         raise FileNotFoundError(f"Master dataset not found at {database_path}.")
 

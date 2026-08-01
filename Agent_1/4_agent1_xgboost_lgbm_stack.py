@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import joblib
+from pathlib import Path
 from sklearn.metrics import (
     mean_squared_error,
     mean_absolute_error,
@@ -11,7 +12,8 @@ from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
 
 def train_ml_models():
-    df = pd.read_csv("/Users/dominating-spirit/newbackend/master_macro_dataset.csv")
+    repo_root = Path(__file__).resolve().parent.parent
+    df = pd.read_csv(repo_root / "master_macro_dataset.csv")
     df['Date'] = pd.to_datetime(
         df['Date'],
         format="%d/%m/%Y"

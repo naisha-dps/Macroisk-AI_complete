@@ -12,10 +12,10 @@ load_dotenv()
 
 class RAGAgent:
     def __init__(self):
-        # Setup absolute paths strictly to prevent pathlib override errors
-        self.base_dir = Path(__file__).resolve().parent.parent
-        self.docs_dir = Path("/Users/dominating-spirit/newbackend/DATASET")
-        self.db_dir = Path("/Users/dominating-spirit/newbackend/chroma_db")
+        # Project-relative paths, resolved from this file's location (repo root)
+        self.base_dir = Path(__file__).resolve().parent
+        self.docs_dir = self.base_dir / "DATASET"
+        self.db_dir = self.base_dir / "chroma_db"
 
         print(f"📁 Looking for papers and data in: {self.docs_dir}")
         self.docs_dir.mkdir(exist_ok=True)

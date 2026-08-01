@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 from linearmodels.panel import RandomEffects
 from linearmodels.panel import PanelOLS
 
@@ -6,7 +7,7 @@ from linearmodels.panel import PanelOLS
 # Load Dataset
 # ==========================================================
 
-file_path = r"/Users/dominating-spirit/newbackend/Agent_3/final_panel_dataset_repo_brent.xlsx"
+file_path = Path(__file__).resolve().parent.parent / "DATASET" / "final_panel_dataset_repo_brent.xlsx"
 
 df = pd.read_excel(file_path)
 
@@ -119,9 +120,8 @@ MODEL_CONFIG = {
 
 import json
 import pickle
-from pathlib import Path
 
-output_dir = Path("MacroRisk_AI_Models")
+output_dir = Path(__file__).resolve().parent / "Agent3_weights"
 output_dir.mkdir(exist_ok=True)
 
 all_results = {}

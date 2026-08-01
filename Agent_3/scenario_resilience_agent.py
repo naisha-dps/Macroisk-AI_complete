@@ -6,8 +6,9 @@ from pathlib import Path
 class FinancialAgent:
     def __init__(self):
         self.base_dir = Path(__file__).resolve().parent
-        self.data_path = self.base_dir / "final_panel_dataset_repo_brent.xlsx"
-        self.models_dir = self.base_dir / "/Users/dominating-spirit/newbackend/Agent_3/Agent3_weights"
+        self.repo_root = self.base_dir.parent
+        self.data_path = self.repo_root / "DATASET" / "final_panel_dataset_repo_brent.xlsx"
+        self.models_dir = self.base_dir / "Agent3_weights"
         self._df_cache = None
 
     def get_data(self) -> pd.DataFrame:

@@ -1,14 +1,18 @@
 import pandas as pd
 import numpy as np
+from pathlib import Path
+
+# Project-relative default, resolved from this file's location (Agent_1/ -> repo root)
+_DEFAULT_CSV_PATH = Path(__file__).resolve().parent.parent / "master_macro_dataset.csv"
 
 class MacroApiService:
     """
-    A mock API service that fetches the most recent data row from the 
+    A mock API service that fetches the most recent data row from the
     historical CSV to seed the Agent 1 macro forecaster.
     """
-    
+
     @staticmethod
-    def fetch_current_payload(csv_path="/Users/dominating-spirit/newbackend/master_macro_dataset.csv"):
+    def fetch_current_payload(csv_path=_DEFAULT_CSV_PATH):
         """
         Reads the CSV, engineers the same lag/rolling features used in training,
         and returns the final row as a dictionary payload.

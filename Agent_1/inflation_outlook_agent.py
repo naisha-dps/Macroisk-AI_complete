@@ -7,6 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 import numpy as np
 import pandas as pd
 import joblib
+from pathlib import Path
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -15,9 +16,10 @@ from Agent_1.macro_api_service import MacroApiService
 
 class MacroAgent:
     def __init__(self):
-        # Pointing directly to the agent1_models directory
-        self.models_dir = "/Users/dominating-spirit/newbackend/models"
-        
+        # Project-relative paths, resolved from this file's location
+        self.base_dir = Path(__file__).resolve().parent.parent
+        self.models_dir = self.base_dir / "models"
+
         self.xgb_model = self._load_model("xgboost_inflation_model.pkl")
         self.lgb_model = self._load_model("lightgbm_inflation_model.pkl")
         self.arimax_model = self._load_model("arimax_inflation_model.pkl")
@@ -31,7 +33,7 @@ class MacroAgent:
            "LightGBM": 0.174
        }
        # Load historical dataset once to derive realistic bounds
-        hist_df = pd.read_csv("/Users/dominating-spirit/newbackend/master_macro_dataset.csv")
+        hist_df = pd.read_csv(self.base_dir / "master_macro_dataset.csv")
 
         self.WPI_MIN = hist_df["WPI"].min()
         self.WPI_MAX = hist_df["WPI"].max()

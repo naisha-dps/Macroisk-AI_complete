@@ -4,9 +4,10 @@ import math
 
 class CompanyDataAgent:
     def __init__(self):
-        # 1. Use absolute paths to guarantee the files are found
-        self.metrics_path = Path("/Users/dominating-spirit/newbackend/DATASET/final_panel_dataset_repo_brent.xlsx")
-        self.statements_path = Path("/Users/dominating-spirit/newbackend/DATASET/Hackathon_7_Metrics_Growth.csv")
+        # 1. Project-relative paths, resolved from this file's location (Agent_2/ -> repo root)
+        self.base_dir = Path(__file__).resolve().parent.parent
+        self.metrics_path = self.base_dir / "DATASET" / "final_panel_dataset_repo_brent.xlsx"
+        self.statements_path = self.base_dir / "DATASET" / "Hackathon_7_Metrics_Growth.csv"
 
         self._df_cache = None
         self._statements_cache = None
