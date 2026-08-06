@@ -56,7 +56,9 @@ class FinancialAgent:
         def build_features(inf, repo, brent, features_list):
             feat_dict = {}
             for f in features_list:
-                if f == "Inflation":
+                if f == "const":
+                    feat_dict[f] = 1.0
+                elif f == "Inflation":
                     feat_dict[f] = inf
                 elif f == "Repo_Rate":
                     feat_dict[f] = repo
@@ -100,10 +102,14 @@ class FinancialAgent:
             
             # Predict Future scenario (Agent 1's projection)
             X_forecast = build_features(proj_inf, proj_repo, proj_brent, features)
+            # Ensure same order as the trained model
+            X_forecast = X_forecast.reindex(params.index, fill_value=0.0)
             pred_forecast = X_forecast.dot(params)
             
             # Predict Baseline scenario (Economy stays stagnant)
             X_baseline = build_features(base_inf, base_repo, base_brent, features)
+            # Ensure same order as the trained model
+            X_forecast = X_forecast.reindex(params.index, fill_value=0.0)
             pred_baseline = X_baseline.dot(params)
             
             forecasts[dep_var] = round(float(pred_forecast), 4)

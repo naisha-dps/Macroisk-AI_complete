@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 from linearmodels.panel import RandomEffects
 from linearmodels.panel import PanelOLS
+from statsmodels.api import add_constant
 
 # ==========================================================
 # Load Dataset
@@ -149,6 +150,10 @@ for dep_var, config in MODEL_CONFIG.items():
 
     else:
 
+        # Add intercept
+        X = add_constant(X, has_constant="add")
+
+
         model = RandomEffects(
             y,
             X
@@ -180,7 +185,7 @@ for dep_var, config in MODEL_CONFIG.items():
 
         "dependent_variable": dep_var,
 
-        "features": config["x"],
+        "features": list(results.params.index),
 
         "coefficients": results.params.to_dict(),
 
