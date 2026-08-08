@@ -28,10 +28,12 @@ class MacroAgent:
        
         self.weights = {
            "ARIMAX": 0.426,
-           "XGBoost": 0.200,
-           "VAR": 0.200,
-           "LightGBM": 0.174
+           "XGBoost": 0.219,
+           "VAR": 0.191,
+           "LightGBM": 0.164
        }
+
+
        # Load historical dataset once to derive realistic bounds
         hist_df = pd.read_csv(self.base_dir / "master_macro_dataset.csv")
 
@@ -46,6 +48,23 @@ class MacroAgent:
 
         self.EXCHANGE_MIN = hist_df["exchange_rate"].min()
         self.EXCHANGE_MAX = hist_df["exchange_rate"].max()
+
+        # Historical statistics
+        self.infl_mean = hist_df["CPI_Inflation_Rate"].mean()
+        self.infl_std  = hist_df["CPI_Inflation_Rate"].std()
+        
+        self.oil_mean = hist_df["oil_price"].mean()
+        self.oil_std  = hist_df["oil_price"].std()
+        
+        self.fx_mean = hist_df["exchange_rate"].mean()
+        self.fx_std  = hist_df["exchange_rate"].std()
+
+        self.repo_mean = hist_df["Repo_Rate"].mean()
+        self.repo_std = hist_df["Repo_Rate"].std()
+
+        self.wpi_mean = hist_df["WPI"].mean()
+        self.wpi_std = hist_df["WPI"].std()
+
 
 
 
@@ -120,6 +139,8 @@ class MacroAgent:
         
         print(f"🔄 Starting {months_ahead}-month autoregressive forecast loop...")
 
+
+
         # 2. The Multi-Step Forecasting Loop
         for step in range(1, months_ahead + 1):
             target_date = current_date + relativedelta(months=step)
@@ -137,14 +158,36 @@ class MacroAgent:
                     
                     # Economic Boundary Constraints
                     # This stops the VAR model from predicting impossible real-world scenarios
-                    current_wpi = np.clip(
-                        var_forecast[1],
-                        self.WPI_MIN,
-                        self.WPI_MAX
+                    
+                    # Recursive WPI shrinkage to stabilize recursive forecasts
+                    wpi_anchor = 0.95*current_wpi_lag_1 + 0.05*self.wpi_mean
+    
+                    wpi_lambda = 0.15
+    
+                    wpi_alpha = np.exp(
+                        -wpi_lambda * (step - 1)
+                    )
+    
+                    current_wpi = (
+                        wpi_alpha * var_forecast[1]
+                        + (1 - wpi_alpha) * wpi_anchor
                     )
 
+
+
+                    # REPO RATE POLICY RULE
+
+                    previous_repo = current_repo
+                    
+                    if var_cpi_pred >= 6.0:
+                        current_repo = previous_repo + 0.25
+                    elif var_cpi_pred <= 4.0:
+                            current_repo = previous_repo - 0.25
+                    else:
+                            current_repo = previous_repo
+                    
                     current_repo = np.clip(
-                        var_forecast[2],
+                        current_repo,
                         self.REPO_MIN,
                         self.REPO_MAX
                     )
@@ -191,9 +234,12 @@ class MacroAgent:
                         self.EXCHANGE_MIN,
                         self.EXCHANGE_MAX
                     )
+
+
                 except Exception as e:
                     print (f'VAR forecast failed : {e}')
                     var_cpi_pred = current_cpi_lag_1
+
             else:
                 var_cpi_pred = current_cpi_lag_1 # Fallback
 
@@ -294,38 +340,89 @@ class MacroAgent:
                 final_ensemble_value = ensemble_val
                 final_breakdown = indiv_preds
 
+
+
+
         # --- 3. DYNAMIC FORMULA WITH ZERO-BOUND PROTECTION ---
-        forecast_lower_bound = round(final_ensemble_value - 0.47, 2)
-        forecast_upper_bound  = round(final_ensemble_value + 0.47, 2)
+        
+        predictions = np.array(list(final_breakdown.values()))
 
-        if len(final_breakdown) > 1:
-            std_dev = np.std(list(final_breakdown.values()))
-            derived_conf = round(float(max(0.40, 0.96 - (std_dev * 0.15))), 2)
+        if len(predictions) > 1:
+            std_dev = np.std(predictions, ddof=1)
         else:
-            derived_conf = 0.50
-        conf_label = "High" if derived_conf >= 0.85 else "Medium" if derived_conf >= 0.70 else "Low"
+            std_dev = 0.0
+        margin95 = 1.96 * std_dev
+
+        forecast_lower_bound = round(final_ensemble_value - margin95, 2)
+        forecast_upper_bound  = round(final_ensemble_value + margin95, 2)
 
 
 
+        # Z-scores
+        infl_z = (final_ensemble_value - self.infl_mean) / self.infl_std
+        oil_z = (current_oil - self.oil_mean) / self.oil_std
+        fx_z = (current_exchange - self.fx_mean) / self.fx_std
+        repo_z = (current_repo - self.repo_mean) / self.repo_std
+        wpi_z = (current_wpi - self.wpi_mean) / self.wpi_std
 
-        # Regime calculations
-        base_dp = max(0.0, (40.0 - 2.0 * current_wpi - 1.5 * max(0, current_oil - 70) + 1.0 * (85.0 - current_exchange)))
-        base_cp = max(0.0, (10.0 + 3.5 * current_wpi + 0.8 * max(0, current_oil - 70) + 1.2 * max(0, current_exchange - 82.0)))
-        base_cd = max(0.0, (10.0 + max(0, (4.5 - final_ensemble_value) * 15) + 1.5 * max(0, 6.0 - current_repo)))
-        base_stag = max(0.0, (5.0 + (max(0, current_wpi - 5.0) * 3) + max(0, (final_ensemble_value - 5.0) * 5) + 0.5 * max(0, current_oil - 80)))
+        inflation_score = max(0.0, infl_z)
+        oil_score = max(0.0, oil_z)
+        fx_score  = max(0.0, fx_z)
+        repo_score = max(0.0, repo_z)
+        wpi_score = max(0.0, wpi_z)
 
-        total_weight = max(1.0, base_dp + base_cp + base_cd + base_stag)
 
-        prob_dist = {
-            "Demand Pull": int(round((base_dp / total_weight) * 100)),
-            "Cost Push": int(round((base_cp / total_weight) * 100)),
-            "Cooling/Deflation": int(round((base_cd / total_weight) * 100)),
+
+        # Cause of inflation 
+        cp_score = (
+            0.60 * oil_score +
+            0.40 * fx_score    )
+        dp_score = max(0.0, inflation_score - 0.5 * cp_score)
+        total = max(1e-8, dp_score + cp_score)
+
+        cause_distribution = {
+            "Demand Pull": round(dp_score / total * 100),
+            "Cost Push": 100 - round(dp_score / total * 100)
         }
-        prob_dist["Stagflation"] = max(0, 100 - sum(prob_dist.values()))
 
-        primary_regime = max(prob_dist, key=prob_dist.get)
-        commodity_pressure = "High" if (current_wpi > 7.0 or current_oil > 85.0) else "Moderate"
-        cpi_baseline = latest.get('cpi_lag_1', 4.0)
+
+        # Regime classification
+        base_normal = max(0, 1 - abs(infl_z))
+        base_cooling = max(0, -infl_z + repo_z)
+        total = max(1e-8, base_normal + base_cooling)
+
+        regime_prob = {
+            "Normal Inflation": round(base_normal / total * 100),
+            "Cooling / Deflation": 100 - round(base_normal / total * 100)
+        }
+        primary_regime = max(regime_prob, key=regime_prob.get)
+
+
+
+        # Policy outlook
+        if current_repo >= self.repo_mean + self.repo_std:
+            policy_outlook = "Restrictive"
+        elif current_repo >= self.repo_mean:
+            policy_outlook = "Neutral"
+        else:
+            policy_outlook = "Accommodative"
+
+
+        # Commodity Pressure
+        score = 0
+        if current_wpi > self.wpi_mean + self.wpi_std:
+            score += 1
+        if current_oil > self.oil_mean + self.oil_std:
+            score += 1
+
+        if score == 2:
+            commodity_pressure = "High"
+        elif score == 1:
+            commodity_pressure = "Moderate"
+        else:
+            commodity_pressure = "Low"
+
+
 
         return {
             "inflation_forecast": {
@@ -334,29 +431,28 @@ class MacroAgent:
                 "final_inflation": final_ensemble_value,
                 "forecast_lower_bound": forecast_lower_bound,
                 "forecast_upper_bound": forecast_upper_bound,
-                "model_used": "Autoregressive Delta-Stacked Ensemble",
-                "model_agreement_score": derived_conf,
-                "model_agreement": conf_label
+                "model_used": "Autoregressive Delta-Stacked Ensemble"
             },
             "trajectory": forecast_trajectory,
             "ensemble_breakdown_final_month": final_breakdown,
+            "inflation_cause": cause_distribution,
             "inflation_regime": {
                 "class": primary_regime,
-                "probabilistic_distribution": prob_dist
+                "probability": regime_prob[primary_regime]
             },
             "macro_summary": {
-                "inflation_trend": "Decreasing" if final_ensemble_value < cpi_baseline else "Increasing",
-                "policy_outlook": "Neutral" if current_repo >= 6.5 else "Accommodative",
+                "policy_outlook": policy_outlook,
                 "commodity_pressure": commodity_pressure
             }
         }
+
 
 if __name__ == "__main__":
     import json
     agent = MacroAgent()
 
     print("==================================================")
-    print("🧪 TEST 1: LIVE DATA FORECAST (Next 5 Months)")
+    print("TEST 1: LIVE DATA FORECAST (Next 5 Months)")
     print("==================================================")
     try:
         live_result = agent.execute(months_ahead=5)
@@ -364,8 +460,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Live data test failed (is your API service running?): {e}")
 
+
+
     # print("\n==================================================")
-    # print("🧪 TEST 2: CUSTOM MANUAL PAYLOAD (Next 5 Months)")
+    # print("TEST 2: CUSTOM MANUAL PAYLOAD (Next 5 Months)")
     # print("==================================================")
     # mock_payload = {
     #     "macroeconomic_data": [
