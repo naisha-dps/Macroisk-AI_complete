@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Project-relative default, resolved from this file's location (Agent_1/ -> repo root)
+# Project-relative default, resolved from this file's location (Agent_1/-> repo root)
 _DEFAULT_CSV_PATH = Path(__file__).resolve().parent.parent / "master_macro_dataset.csv"
 
 class MacroApiService:
