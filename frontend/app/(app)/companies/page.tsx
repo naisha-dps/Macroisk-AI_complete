@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCompanyFinancials } from "@/lib/hooks/use-market-data";
-import { titleCase } from "@/lib/utils/format";
+import { formatSectorName } from "@/lib/utils/format";
 
 export default function CompaniesPage() {
   const [sector, setSector] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function CompaniesPage() {
                 <h2 className="text-xl font-semibold tracking-tight text-ink-primary">
                   {financials.data.company.toUpperCase()}
                 </h2>
-                <p className="mt-1 text-[13px] text-ink-muted">{titleCase(financials.data.industry)}</p>
+                <p className="mt-1 text-[13px] text-ink-muted">{formatSectorName(financials.data.industry)}</p>
               </div>
               <Badge variant="accent" className="w-fit">
                 Latest data · FY{financials.data.latest_year_available}

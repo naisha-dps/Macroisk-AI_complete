@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Gauge } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { navItems } from "./nav-items";
 import { cn } from "@/lib/utils/cn";
 
@@ -12,9 +13,7 @@ export function AppSidebar() {
   return (
     <aside className="hidden w-[248px] shrink-0 flex-col border-r border-line bg-surface-1/60 px-4 py-6 lg:flex">
       <Link href="/" className="mb-8 flex items-center gap-2.5 px-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-ink-primary text-surface-0">
-          <Gauge className="h-4 w-4" />
-        </span>
+        <Image src="/logo.jpg" alt="MacroRisk AI" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full" />
         <div className="leading-tight">
           <p className="text-[13px] font-semibold tracking-tight text-ink-primary">MacroRisk AI</p>
           <p className="text-[11px] text-ink-muted">Console</p>

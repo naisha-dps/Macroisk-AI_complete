@@ -6,16 +6,22 @@ import { categorical, chartChrome } from "@/lib/utils/chart-colors";
 import type { InflationRegime, InflationRegimeClass } from "@/lib/api/types";
 import { ChartTooltipShell, ChartTooltipRow } from "./chart-tooltip";
 
-const REGIME_ORDER: InflationRegimeClass[] = ["Demand Pull", "Cost Push", "Cooling/Deflation", "Stagflation"];
+/**
+ * Agent 1 scores exactly these two mutually-exclusive regimes, and — by
+ * construction on the backend — their probabilities always sum to 100. Only
+ * the winning class + its probability cross the wire, so the runner-up's
+ * share is derived as the complement rather than re-requested from the API.
+ */
+const REGIME_CLASSES: InflationRegimeClass[] = ["Normal Inflation", "Cooling / Deflation"];
 
 export function RegimeDonutChart({ regime }: { regime: InflationRegime }) {
   const mode = useChartMode();
   const chrome = chartChrome[mode];
   const palette = categorical[mode];
 
-  const data = REGIME_ORDER.map((label, i) => ({
+  const data = REGIME_CLASSES.map((label, i) => ({
     label,
-    value: regime.probabilistic_distribution?.[label] ?? 0,
+    value: label === regime.class ? regime.probability : 100 - regime.probability,
     color: palette[i],
   }));
 

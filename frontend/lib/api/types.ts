@@ -24,8 +24,9 @@ export interface InflationForecast {
   forecast_lower_bound: number;
   forecast_upper_bound: number;
   model_used: string;
-  model_agreement_score: number;
-  model_agreement: "High" | "Medium" | "Low";
+  /** Not currently emitted by the backend — Agent 1 has no model-agreement scoring step. */
+  model_agreement_score?: number;
+  model_agreement?: "High" | "Medium" | "Low";
 }
 
 export interface TrajectoryPoint {
@@ -37,32 +38,38 @@ export interface TrajectoryPoint {
   projected_exchange: number;
 }
 
-/** Keys present depend on which pickled models loaded successfully. */
+/**
+ * Keys present depend on which pickled models loaded successfully. The
+ * "ARIMAX" key is the backend's internal model name — the UI displays this
+ * model as "SARIMAX" (it is seasonal), but the wire key is left unchanged.
+ */
 export type EnsembleBreakdown = Partial<
   Record<"XGBoost" | "LightGBM" | "ARIMAX" | "VAR", number>
 >;
 
-export type InflationRegimeClass =
-  | "Demand Pull"
-  | "Cost Push"
-  | "Cooling/Deflation"
-  | "Stagflation";
+/** The two mutually exclusive causes Agent 1 scores; values always sum to 100. */
+export type InflationCauseClass = "Demand Pull" | "Cost Push";
+
+export type InflationCause = Record<InflationCauseClass, number>;
+
+/** The two mutually exclusive regimes Agent 1 scores; `probability` is the score for `class`, and the other regime's score is always `100 - probability`. */
+export type InflationRegimeClass = "Normal Inflation" | "Cooling / Deflation";
 
 export interface InflationRegime {
   class: InflationRegimeClass | string;
-  probabilistic_distribution: Record<InflationRegimeClass, number>;
+  probability: number;
 }
 
 export interface MacroSummary {
-  inflation_trend: "Increasing" | "Decreasing";
-  policy_outlook: "Neutral" | "Accommodative";
-  commodity_pressure: "High" | "Moderate";
+  policy_outlook: "Restrictive" | "Neutral" | "Accommodative";
+  commodity_pressure: "High" | "Moderate" | "Low";
 }
 
 export interface ForecastResponse {
   inflation_forecast: InflationForecast;
   trajectory: TrajectoryPoint[];
   ensemble_breakdown_final_month: EnsembleBreakdown;
+  inflation_cause: InflationCause;
   inflation_regime: InflationRegime;
   macro_summary: MacroSummary;
 }

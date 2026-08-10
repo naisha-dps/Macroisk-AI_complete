@@ -14,7 +14,7 @@ export default function ForecastPage() {
   const forecast = useForecast();
 
   useEffect(() => {
-    forecast.mutate({ months_ahead: 3 });
+    forecast.mutate({ months_ahead: 6 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -23,7 +23,7 @@ export default function ForecastPage() {
       <PageHeader
         eyebrow="Agent 1 · POST /forecast"
         title="Macro Forecast"
-        description="A multi-step autoregressive ensemble of XGBoost, LightGBM, ARIMAX and VAR(2) — projecting India's CPI inflation path, and the WPI / repo / Brent / FX trajectory it's derived from."
+        description="A multi-step autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) — projecting India's CPI inflation path, and the WPI / repo / Brent / FX trajectory it's derived from."
       />
 
       <div className="flex flex-col gap-6">
@@ -37,7 +37,7 @@ export default function ForecastPage() {
           </div>
         )}
 
-        {forecast.isError && <ErrorState error={forecast.error} onRetry={() => forecast.mutate({ months_ahead: 3 })} />}
+        {forecast.isError && <ErrorState error={forecast.error} onRetry={() => forecast.mutate({ months_ahead: 6 })} />}
 
         {forecast.isSuccess && <ForecastResults data={forecast.data} />}
 

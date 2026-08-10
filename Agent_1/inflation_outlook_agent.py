@@ -12,7 +12,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 # Import the new live data service
-from Agent_1.macro_api_service import MacroApiService
+from macro_api_service import MacroApiService
 
 class MacroAgent:
     def __init__(self):

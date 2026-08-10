@@ -18,7 +18,7 @@ export function AnalysisForm({
 }) {
   const [sector, setSector] = useState<string | null>(null);
   const [company, setCompany] = useState<string | null>(null);
-  const [months, setMonths] = useState(3);
+  const [months, setMonths] = useState(6);
 
   return (
     <Card className="flex flex-col gap-6 p-6">

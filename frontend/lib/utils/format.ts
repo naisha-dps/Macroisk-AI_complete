@@ -48,6 +48,11 @@ export function titleCase(value: string | null | undefined): string {
     .join(" ");
 }
 
+/** Title-cases a sector/industry name, with display-only relabeling (e.g. the "Financials" sector reads as "Financial"). */
+export function formatSectorName(value: string | null | undefined): string {
+  return titleCase(value).replace(/\bFinancials\b/g, "Financial");
+}
+
 export function signClass(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value) || value === 0) return "text-muted";
   return value > 0 ? "text-good" : "text-critical";

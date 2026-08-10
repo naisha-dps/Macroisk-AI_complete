@@ -9,7 +9,7 @@ const AGENTS = [
     tag: "Agent 1",
     title: "Inflation Outlook",
     description:
-      "An autoregressive ensemble of XGBoost, LightGBM, ARIMAX and VAR(2) — weighted, clipped to historical bounds, and rolled forward month by month.",
+      "An autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) — weighted, clipped to historical bounds, and rolled forward month by month.",
   },
   {
     icon: Building2,

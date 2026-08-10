@@ -9,7 +9,7 @@ from statsmodels.tsa.stattools import adfuller
 
 def train_arimax_model():
     """Trains ARIMAX model using a 90/10 time-series split on the master macro dataset."""
-    database_path = "C:/Users/prana/Downloads/master_macro_dataset.csv"
+    database_path = Path(__file__).resolve().parent.parent / "master_macro_dataset.csv"
     if not os.path.exists(database_path):
         raise FileNotFoundError(f"Master dataset not found at {database_path}.")
 
