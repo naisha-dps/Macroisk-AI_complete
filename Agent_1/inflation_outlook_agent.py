@@ -133,6 +133,15 @@ class MacroAgent:
         current_oil = latest.get('oil_price', 75.0)
         current_exchange = latest.get('exchange_rate', 83.0)
 
+        # Initialize previous-month macro values
+        previous_wpi = current_wpi_lag_1
+        previous_repo = current_repo
+        previous_oil = current_oil_lag_1
+
+        # If your payload does not contain an exchange-rate lag,
+        # use the latest exchange rate as the starting previous value.
+        previous_exchange = current_exchange
+
         forecast_trajectory = []
         final_ensemble_value = 0.0
         final_breakdown = {}
@@ -286,8 +295,22 @@ class MacroAgent:
 
             if self.arimax_model:
                 try:
-                    exog_row = features[['WPI', 'Repo_Rate', 'oil_price', 'exchange_rate']]
-                    ari_val = self.arimax_model.forecast(steps=1, exog=exog_row).iloc[0]
+                    # ARIMAX was trained on FIRST-DIFFERENCED variables
+                    delta_wpi = current_wpi - previous_wpi
+                    delta_repo = current_repo - previous_repo
+                    delta_oil = current_oil - previous_oil
+                    delta_exchange = current_exchange - previous_exchange
+                    
+                    arimax_exog = pd.DataFrame([{
+                        "WPI": delta_wpi,
+                        "Repo_Rate": delta_repo,
+                        "oil_price": delta_oil,
+                        "exchange_rate": delta_exchange
+                    }])
+                    # Model predicts ΔCPI
+                    predicted_delta = self.arimax_model.forecast(steps=1, exog=arimax_exog).iloc[0]
+                    # Convert ΔCPI back to CPI inflation level
+                    ari_val = current_cpi_lag_1 + predicted_delta 
                     indiv_preds['ARIMAX'] = round(float(ari_val), 2)
                     weighted_predictions.append(ari_val * self.weights['ARIMAX'])
                     weights_used.append(self.weights['ARIMAX'])
@@ -375,27 +398,39 @@ class MacroAgent:
 
         # Cause of inflation 
         cp_score = (
-            0.60 * oil_score +
-            0.40 * fx_score    )
-        dp_score = max(0.0, inflation_score - 0.5 * cp_score)
-        total = max(1e-8, dp_score + cp_score)
+            0.6 * oil_score +
+            0.4 * fx_score    )
+        dp_score = inflation_score
+        total_pressure = max(1e-8, cp_score + dp_score)
+        cp_relative = round(cp_score / total_pressure * 100, 2)
+        dp_relative = round(dp_score / total_pressure * 100, 2)
 
-        cause_distribution = {
-            "Demand Pull": round(dp_score / total * 100),
-            "Cost Push": 100 - round(dp_score / total * 100)
+        cause_pressure = {
+            "Demand Pull": dp_relative,
+            "Cost Push": cp_relative
         }
+        inflation_cause = (
+            "Cost Push"
+            if cp_score > dp_score
+            else "Demand Pull"
+        )
 
 
         # Regime classification
-        base_normal = max(0, 1 - abs(infl_z))
-        base_cooling = max(0, -infl_z + repo_z)
-        total = max(1e-8, base_normal + base_cooling)
+        normal_score = max(0.0, 1.0 - abs(infl_z))
+        cooling_score = max(0.0, -infl_z) + max(0.0, repo_z)
+        total_regime = max(1e-8, normal_score + cooling_score)
+        normal_relative = round(normal_score/total_regime * 100 , 2)
+        cooling_relative = round(cooling_score/total_regime * 100 , 2)
 
-        regime_prob = {
-            "Normal Inflation": round(base_normal / total * 100),
-            "Cooling / Deflation": 100 - round(base_normal / total * 100)
+        regime_scores = {
+            "Normal Inflation": normal_relative,
+            "Cooling / Deflation": cooling_relative
         }
-        primary_regime = max(regime_prob, key=regime_prob.get)
+        primary_regime = max(
+            regime_scores,
+            key=regime_scores.get
+        )
 
 
 
@@ -435,10 +470,13 @@ class MacroAgent:
             },
             "trajectory": forecast_trajectory,
             "ensemble_breakdown_final_month": final_breakdown,
-            "inflation_cause": cause_distribution,
+            "inflation_cause": {
+                "class": inflation_cause,
+                "relative_pressure": cause_pressure
+            },           
             "inflation_regime": {
                 "class": primary_regime,
-                "probability": regime_prob[primary_regime]
+                "relative_pressure": regime_scores
             },
             "macro_summary": {
                 "policy_outlook": policy_outlook,
