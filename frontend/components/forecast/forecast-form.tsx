@@ -15,7 +15,7 @@ export function ForecastForm({
   onSubmit: (monthsAhead: number) => void;
   pending: boolean;
 }) {
-  const [months, setMonths] = useState(3);
+  const [months, setMonths] = useState(6);
 
   return (
     <Card className="p-6">

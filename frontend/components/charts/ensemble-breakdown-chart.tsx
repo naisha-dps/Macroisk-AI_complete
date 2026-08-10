@@ -10,13 +10,21 @@ import { ChartTooltipShell, ChartTooltipRow } from "./chart-tooltip";
 /** Fixed entity -> color-slot assignment, independent of value ranking. */
 const MODEL_ORDER = ["XGBoost", "LightGBM", "ARIMAX", "VAR"] as const;
 
+/** Display-only relabeling — the wire key stays "ARIMAX", but the model is seasonal, so the UI calls it SARIMAX. */
+const MODEL_LABELS: Record<(typeof MODEL_ORDER)[number], string> = {
+  XGBoost: "XGBoost",
+  LightGBM: "LightGBM",
+  ARIMAX: "SARIMAX",
+  VAR: "VAR",
+};
+
 export function EnsembleBreakdownChart({ breakdown }: { breakdown: EnsembleBreakdown }) {
   const mode = useChartMode();
   const chrome = chartChrome[mode];
   const palette = categorical[mode];
 
   const data = MODEL_ORDER.filter((m) => breakdown[m] !== undefined).map((model) => ({
-    model,
+    model: MODEL_LABELS[model],
     value: breakdown[model] as number,
     color: palette[MODEL_ORDER.indexOf(model)],
   }));

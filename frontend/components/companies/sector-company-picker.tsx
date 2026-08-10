@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCompaniesBySector, useSectors } from "@/lib/hooks/use-market-data";
-import { titleCase } from "@/lib/utils/format";
+import { formatSectorName } from "@/lib/utils/format";
 
 interface SectorCompanyPickerProps {
   sector: string | null;
@@ -44,7 +44,7 @@ export function SectorCompanyPicker({
             <SelectContent>
               {(sectorsQuery.data ?? []).map((s) => (
                 <SelectItem key={s} value={s}>
-                  {titleCase(s)}
+                  {formatSectorName(s)}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Gauge, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { navItems } from "./nav-items";
 import { ThemeToggle } from "./theme-toggle";
 import { ConnectionStatus } from "@/components/common/connection-status";
@@ -45,9 +46,7 @@ export function AppTopbar() {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent className="sm:max-w-xs p-0">
           <div className="flex items-center gap-2.5 border-b border-line px-5 py-5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-ink-primary text-surface-0">
-              <Gauge className="h-4 w-4" />
-            </span>
+            <Image src="/logo.jpg" alt="MacroRisk AI" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full" />
             <p className="text-[13px] font-semibold text-ink-primary">MacroRisk AI</p>
           </div>
           <nav className="flex flex-col gap-1 p-3">

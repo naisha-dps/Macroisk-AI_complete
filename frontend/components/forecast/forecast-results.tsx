@@ -7,6 +7,7 @@ import { StatTile } from "@/components/common/stat-tile";
 import { InflationTrajectoryChart } from "@/components/charts/inflation-trajectory-chart";
 import { EnsembleBreakdownChart } from "@/components/charts/ensemble-breakdown-chart";
 import { RegimeDonutChart } from "@/components/charts/regime-donut-chart";
+import { CausesDonutChart } from "@/components/charts/causes-donut-chart";
 import { TrajectoryTable } from "@/components/forecast/trajectory-table";
 import { formatPercent } from "@/lib/utils/format";
 import type { ForecastResponse } from "@/lib/api/types";
@@ -18,7 +19,14 @@ const agreementVariant = {
 } as const;
 
 export function ForecastResults({ data }: { data: ForecastResponse }) {
-  const { inflation_forecast, trajectory, ensemble_breakdown_final_month, inflation_regime, macro_summary } = data;
+  const {
+    inflation_forecast,
+    trajectory,
+    ensemble_breakdown_final_month,
+    inflation_cause,
+    inflation_regime,
+    macro_summary,
+  } = data;
 
   return (
     <motion.div
@@ -39,18 +47,22 @@ export function ForecastResults({ data }: { data: ForecastResponse }) {
         <StatTile
           label="Inflation regime"
           value={inflation_regime.class}
-          caption={`Trend: ${macro_summary.inflation_trend} · Commodity pressure: ${macro_summary.commodity_pressure}`}
+          caption={`Probability: ${inflation_regime.probability}% · Commodity pressure: ${macro_summary.commodity_pressure}`}
           delay={0.05}
         />
         <StatTile
           label="Model agreement"
           value={
-            <span className="flex items-center gap-2">
-              {inflation_forecast.model_agreement}
-              <Badge variant={agreementVariant[inflation_forecast.model_agreement] ?? "neutral"}>
-                {inflation_forecast.model_agreement_score.toFixed(2)}
-              </Badge>
-            </span>
+            inflation_forecast.model_agreement ? (
+              <span className="flex items-center gap-2">
+                {inflation_forecast.model_agreement}
+                <Badge variant={agreementVariant[inflation_forecast.model_agreement] ?? "neutral"}>
+                  {inflation_forecast.model_agreement_score?.toFixed(2) ?? "—"}
+                </Badge>
+              </span>
+            ) : (
+              "—"
+            )
           }
           caption={`Policy outlook: ${macro_summary.policy_outlook}`}
           delay={0.1}
@@ -81,14 +93,14 @@ export function ForecastResults({ data }: { data: ForecastResponse }) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle>Month-by-month detail</CardTitle>
-            <CardDescription>Exact projected values across every macro input</CardDescription>
+            <CardTitle>Causes of inflation</CardTitle>
+            <CardDescription>Demand-pull vs. cost-push breakdown, final month</CardDescription>
           </CardHeader>
           <CardContent>
-            <TrajectoryTable trajectory={trajectory} />
+            <CausesDonutChart cause={inflation_cause} />
           </CardContent>
         </Card>
 
@@ -102,6 +114,16 @@ export function ForecastResults({ data }: { data: ForecastResponse }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Month-by-month detail</CardTitle>
+          <CardDescription>Exact projected values across every macro input</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TrajectoryTable trajectory={trajectory} />
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }
