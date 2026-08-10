@@ -27,18 +27,18 @@ app.add_middleware(
 
 class ForecastRequest(BaseModel):
     months_ahead: int = Field(
-        default=3, 
-        ge=1, 
-        le=12, 
-        description="Number of months to forecast the macro economy (1-12)"
+        default=3,
+        ge=1,
+        le=6,
+        description="Number of months to forecast the macro economy (1-6)"
     )
 
 class CompanyForecastRequest(BaseModel):
     company_name: str = Field(description="Name of the company to analyze")
     months_ahead: int = Field(
-        default=3, 
-        ge=1, 
-        le=12, 
+        default=3,
+        ge=1,
+        le=6,
         description="Months ahead to forecast macro environment to apply to the company"
     )
 

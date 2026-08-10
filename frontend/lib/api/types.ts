@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------
 
 export interface ForecastRequest {
-  /** 1–12, default 3 on the backend. */
+  /** 1–6, default 3 on the backend. */
   months_ahead: number;
 }
 
@@ -47,17 +47,20 @@ export type EnsembleBreakdown = Partial<
   Record<"XGBoost" | "LightGBM" | "ARIMAX" | "VAR", number>
 >;
 
-/** The two mutually exclusive causes Agent 1 scores; values always sum to 100. */
+/** The two mutually exclusive causes Agent 1 scores; relative_pressure values always sum to 100. */
 export type InflationCauseClass = "Demand Pull" | "Cost Push";
 
-export type InflationCause = Record<InflationCauseClass, number>;
+export interface InflationCause {
+  class: InflationCauseClass | string;
+  relative_pressure: Record<InflationCauseClass, number>;
+}
 
-/** The two mutually exclusive regimes Agent 1 scores; `probability` is the score for `class`, and the other regime's score is always `100 - probability`. */
+/** The two mutually exclusive regimes Agent 1 scores; relative_pressure values always sum to 100. Only `class` is surfaced in the UI — see RegimeDonutChart's removal, regime scores are intentionally not displayed. */
 export type InflationRegimeClass = "Normal Inflation" | "Cooling / Deflation";
 
 export interface InflationRegime {
   class: InflationRegimeClass | string;
-  probability: number;
+  relative_pressure: Record<InflationRegimeClass, number>;
 }
 
 export interface MacroSummary {
@@ -139,7 +142,7 @@ export interface CompanyFinancialsResponse {
 
 export interface CompanyForecastRequest {
   company_name: string;
-  /** 1–12, default 3 on the backend. */
+  /** 1–6, default 3 on the backend. */
   months_ahead: number;
 }
 

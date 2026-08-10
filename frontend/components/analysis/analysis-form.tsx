@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SectorCompanyPicker } from "@/components/companies/sector-company-picker";
 
-const PRESETS = [3, 6, 12];
+const PRESETS = [1, 3, 6];
 
 export function AnalysisForm({
   onSubmit,
@@ -44,7 +44,7 @@ export function AnalysisForm({
             id="analysis-horizon"
             type="range"
             min={1}
-            max={12}
+            max={6}
             step={1}
             value={months}
             onChange={(e) => setMonths(Number(e.target.value))}

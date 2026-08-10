@@ -13,7 +13,7 @@ const capabilities = [
     tag: "Agent 1",
     title: "Macro Forecast",
     description:
-      "Autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) projecting India CPI inflation, repo rate, Brent oil and FX up to 12 months out.",
+      "Autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) projecting India CPI inflation, repo rate, Brent oil and FX up to 6 months out.",
   },
   {
     href: "/companies",

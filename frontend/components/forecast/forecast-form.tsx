@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
-const PRESETS = [3, 6, 12];
+const PRESETS = [1, 3, 6];
 
 export function ForecastForm({
   onSubmit,
@@ -31,7 +31,7 @@ export function ForecastForm({
             id="horizon"
             type="range"
             min={1}
-            max={12}
+            max={6}
             step={1}
             value={months}
             onChange={(e) => setMonths(Number(e.target.value))}
@@ -39,7 +39,7 @@ export function ForecastForm({
           />
           <div className="mt-2 flex items-center justify-between text-[11px] text-ink-muted">
             <span>1</span>
-            <span>12 months</span>
+            <span>6 months</span>
           </div>
           <div className="mt-3 flex gap-2">
             {PRESETS.map((p) => (

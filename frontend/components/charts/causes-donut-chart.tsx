@@ -3,13 +3,13 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useChartMode } from "@/lib/hooks/use-chart-mode";
 import { categorical, chartChrome } from "@/lib/utils/chart-colors";
-import type { InflationCause, InflationCauseClass } from "@/lib/api/types";
+import type { InflationCauseClass } from "@/lib/api/types";
 import { ChartTooltipShell, ChartTooltipRow } from "./chart-tooltip";
 
 /** Agent 1 scores exactly these two mutually-exclusive causes; values always sum to 100. */
 const CAUSE_ORDER: InflationCauseClass[] = ["Demand Pull", "Cost Push"];
 
-export function CausesDonutChart({ cause }: { cause: InflationCause }) {
+export function CausesDonutChart({ cause }: { cause: Record<InflationCauseClass, number> }) {
   const mode = useChartMode();
   const chrome = chartChrome[mode];
   const palette = categorical[mode];
