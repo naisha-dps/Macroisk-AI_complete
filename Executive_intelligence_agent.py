@@ -7,9 +7,9 @@ load_dotenv()
 
 class ReportAgent:
     def __init__(self):
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("Macro")
         if not api_key:
-            print("⚠️ Warning: OPENAI_API_KEY not found in environment variables.")
+            print("⚠️ Warning: Macro (API key) not found in environment variables.")
         
         self.client = OpenAI(api_key=api_key)
 
