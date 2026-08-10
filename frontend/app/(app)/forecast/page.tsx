@@ -21,7 +21,7 @@ export default function ForecastPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Agent 1 · POST /forecast"
+        eyebrow="Inflation Outlook Agent · POST /forecast"
         title="Macro Forecast"
         description="A multi-step autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) — projecting India's CPI inflation path, and the WPI / repo / Brent / FX trajectory it's derived from."
       />

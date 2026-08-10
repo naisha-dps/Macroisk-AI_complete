@@ -26,7 +26,7 @@ export default function CompaniesPage() {
   return (
     <div>
       <PageHeader
-        eyebrow="Agent 2 · GET /company_financials/{name}"
+        eyebrow="Corporate Analysis Agent · GET /company_financials/{name}"
         title="Company Explorer"
         description="Drill from sector into company to pull the historical growth panel and the granular financial statements behind it."
       />

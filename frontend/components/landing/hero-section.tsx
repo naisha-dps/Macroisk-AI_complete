@@ -33,10 +33,11 @@ export function HeroSection() {
           </div>
 
           <h1 className="text-[2.6rem] font-semibold leading-[1.05] tracking-tight text-ink-primary sm:text-[3.4rem]">
-            Macro risk,
-            <br />
-            <span className="text-accent-ink">modeled and explained.</span>
+            MacroRisk AI
           </h1>
+          <p className="mt-2 text-[1.35rem] font-medium leading-snug tracking-tight text-ink-secondary sm:text-[1.6rem]">
+            We Predict. You Decide. AI Supports.
+          </p>
 
           <p className="mt-6 max-w-lg text-[16px] leading-relaxed text-ink-muted">
             An ensemble inflation forecaster, a corporate financial engine, a scenario-resilience model, and an

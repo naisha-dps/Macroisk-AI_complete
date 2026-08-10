@@ -29,18 +29,23 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center justify-between gap-2 rounded-[var(--radius-sm)] px-3 py-2.5 text-[13px] font-medium transition-colors",
+                "group flex items-start justify-between gap-2 rounded-[var(--radius-sm)] px-3 py-2.5 text-[13px] font-medium transition-colors",
                 active
                   ? "bg-surface-2 text-ink-primary"
                   : "text-ink-secondary hover:bg-surface-2/70 hover:text-ink-primary",
               )}
             >
-              <span className="flex items-center gap-2.5">
-                <Icon className={cn("h-[17px] w-[17px]", active ? "text-accent-ink" : "text-ink-muted group-hover:text-ink-secondary")} />
-                {item.label}
+              <span className="flex min-w-0 flex-1 items-start gap-2.5">
+                <Icon
+                  className={cn(
+                    "mt-0.5 h-[17px] w-[17px] shrink-0",
+                    active ? "text-accent-ink" : "text-ink-muted group-hover:text-ink-secondary",
+                  )}
+                />
+                <span className="min-w-0 break-words leading-snug">{item.label}</span>
               </span>
               {item.agent ? (
-                <span className="rounded-full bg-surface-3 px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted">
+                <span className="mt-0.5 shrink-0 rounded-full bg-surface-3 px-1.5 py-0.5 text-[10px] font-semibold text-ink-muted">
                   {item.agent}
                 </span>
               ) : null}

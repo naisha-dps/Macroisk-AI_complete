@@ -6,14 +6,14 @@ import { Bot, Building2, LineChart, Sparkles } from "lucide-react";
 const AGENTS = [
   {
     icon: LineChart,
-    tag: "Agent 1",
+    tag: "Inflation Outlook Agent",
     title: "Inflation Outlook",
     description:
       "An autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) — weighted, clipped to historical bounds, and rolled forward month by month.",
   },
   {
     icon: Building2,
-    tag: "Agent 2",
+    tag: "Corporate Analysis Agent",
     title: "Corporate Analysis",
     description:
       "Pulls the historical growth panel and granular financial statements for any company across a six-sector universe.",

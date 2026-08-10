@@ -6,8 +6,8 @@ import { Check, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const STEPS = [
-  { label: "Predicting the macro economy", agent: "Agent 1" },
-  { label: "Fetching company history & statements", agent: "Agent 2" },
+  { label: "Predicting the macro economy", agent: "Inflation Outlook Agent" },
+  { label: "Fetching company history & statements", agent: "Corporate Analysis Agent" },
   { label: "Forecasting financial scenarios", agent: "Agent 3" },
   { label: "Writing the investment report", agent: "Agent 4" },
 ];

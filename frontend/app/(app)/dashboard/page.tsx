@@ -10,7 +10,7 @@ const capabilities = [
   {
     href: "/forecast",
     icon: LineChart,
-    tag: "Agent 1",
+    tag: "Inflation Outlook Agent",
     title: "Macro Forecast",
     description:
       "Autoregressive ensemble of XGBoost, LightGBM, SARIMAX and VAR(2) projecting India CPI inflation, repo rate, Brent oil and FX up to 6 months out.",
@@ -18,7 +18,7 @@ const capabilities = [
   {
     href: "/companies",
     icon: Building2,
-    tag: "Agent 2",
+    tag: "Corporate Analysis Agent",
     title: "Company Explorer",
     description:
       "Sector → company drill-down over the historical growth panel and granular financial statements, rendered Moneycontrol-style.",

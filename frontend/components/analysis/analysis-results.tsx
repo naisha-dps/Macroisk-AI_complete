@@ -32,7 +32,7 @@ export function AnalysisResults({ data }: { data: AnalyzeCompanyResponse }) {
       </div>
 
       <div>
-        <p className="mb-3 text-[13px] font-semibold text-ink-secondary">Agent 1 — macro assumptions applied</p>
+        <p className="mb-3 text-[13px] font-semibold text-ink-secondary">Inflation Outlook Agent — macro assumptions applied</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatTile label="Projected inflation" value={formatPercent(data.macro_assumptions_used.projected_inflation)} tone="accent" />
           <StatTile
