@@ -21,3 +21,4 @@ langchain-chroma
 langchain-text-splitters
 pypdf     # Required for PyPDFDirectoryLoader
 python-dateutil
+pyarrow
