@@ -7,7 +7,7 @@ load_dotenv()
 
 class ReportAgent:
     def __init__(self):
-        api_key = os.getenv("Macro")
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             print("⚠️ Warning: Macro (API key) not found in environment variables.")
         
